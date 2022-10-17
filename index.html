@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <script src="https://cdn.rawgit.com/naptha/tesseract.js/1.0.10/dist/tesseract.js"></script>
+    <style type="text/css">
+        .title {
+            font-family: 'Marker Felt', sans-serif;
+            font-size: 10vw;
+            text-align: center;
+        }
+        .guidance {
+            font-family: 'Hannotate TC',sans-serif;
+            font-size: 3vw;
+            text-align: center;
+        }
+
+        .sorry {
+            background-color: seagreen;
+            border: 7px solid rgb(161, 117, 74);
+            font-size: 3vw;
+            font-family: 'HanziPen SC',sans-serif;
+            color: #eeeeee;
+            width: 80%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        canvas {
+            border: 3px solid #000;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="title">Tegaki de Anki</div>
+    <div class="guidance">Tegaki de Ankiはテストを作成し、手書きで回答する</div>
+    <div class="sorry">
+        －－　作成者からのお詫び　－－<br>はじめに作成者からお詫び申し上げます。こちらで使われる文字認識ですが、だいぶ精度が悪いです。明らかに読めるだろう！というものが読めないケースも多々あります。
+        作成者自身まだ学生ということもあり、有料のものを使用するのは困難で、精度に劣りますが完全無料のものを使わせていただきました。その点もご了承の上、どうか温かい目でお使いください。
+    </div>
+    <canvas id="canvas" height="300"></canvas>
+    <div style="padding:10px">
+        <button type="button" onclick="clearCanvas()">リセット</button>
+        <button type="button" onclick="prevCanvas()">戻る</button>
+        <button type="button" onclick="nextCanvas()">進む</button>
+    </div>
+    <div style="padding:10px">
+        <button type="button" onclick="chgImg()" value="1">画像変換</button>
+    </div>
+    <div id="progress" style="margin-bottom:1em; background:#eeeeee;"></div>
+    <p>
+        <textarea id="result" style="resize:both;">結果出力</textarea>
+    </p>
+
+    <script>
+        var canvas = document.getElementById('canvas'),
+            ctx = canvas.getContext('2d'),
+            moveflg = 0,
+            Xpoint,
+            Ypoint;
+
+        canvas.width = document.documentElement.clientWidth - 20;
+
+        //初期値（サイズ、色、アルファ値）の決定
+        var defSize = 6,
+            defColor = "#555";
+
+        // キャンバスを白色に塗る
+        ctx.fillStyle = 'rgb(255,255,255)';
+
+        // ストレージの初期化
+        var myStorage = localStorage;
+        window.onload = initLocalStorage();
+
+        // PC対応
+        canvas.addEventListener('mousedown', startPoint, false);
+        canvas.addEventListener('mousemove', movePoint, false);
+        canvas.addEventListener('mouseup', endPoint, false);
+        // スマホ対応
+        canvas.addEventListener('touchstart', startPoint, false);
+        canvas.addEventListener('touchmove', movePoint, false);
+        canvas.addEventListener('touchend', endPoint, false);
+
+        function startPoint(e) {
+            e.preventDefault();
+            ctx.beginPath();
+
+            Xpoint = e.layerX;
+            Ypoint = e.layerY;
+
+            ctx.moveTo(Xpoint, Ypoint);
+        }
+
+        function movePoint(e) {
+            if (e.buttons === 1 || e.witch === 1 || e.type == 'touchmove') {
+                Xpoint = e.layerX;
+                Ypoint = e.layerY;
+                moveflg = 1;
+
+                ctx.lineTo(Xpoint, Ypoint);
+                ctx.lineCap = "round";
+                ctx.lineWidth = defSize * 2;
+                ctx.strokeStyle = defColor;
+                ctx.stroke();
+            }
+        }
+
+        function endPoint(e) {
+            if (moveflg === 0) {
+                ctx.lineTo(Xpoint - 1, Ypoint - 1);
+                ctx.lineCap = "round";
+                ctx.lineWidth = defSize * 2;
+                ctx.strokeStyle = defColor;
+                ctx.stroke();
+
+            }
+            moveflg = 0;
+            setLocalStoreage();
+        }
+
+        function initLocalStorage() {
+            myStorage.setItem("__log", JSON.stringify([]));
+        }
+        function setLocalStoreage() {
+            var png = canvas.toDataURL();
+            var logs = JSON.parse(myStorage.getItem("__log"));
+
+            setTimeout(function () {
+                logs.unshift({ png: png });
+                myStorage.setItem("__log", JSON.stringify(logs));
+                temp = [];
+            }, 0);
+        }
+
+        function clearCanvas() {
+            resetCanvas();
+        }
+
+        function resetCanvas() {
+            ctx.clearRect(0, 0, ctx.canvas.clientWidth, ctx.canvas.clientHeight);
+            ctx.fillStyle = 'rgb(255,255,255)';
+        }
+
+        function prevCanvas() {
+            var logs = JSON.parse(myStorage.getItem("__log"));
+
+            if (logs.length > 0) {
+                temp.unshift(logs.shift());
+
+                setTimeout(function () {
+                    myStorage.setItem("__log", JSON.stringify(logs));
+                    resetCanvas();
+                    draw(logs[0]['png']);
+                }, 0);
+            }
+        }
+
+        function nextCanvas() {
+            var logs = JSON.parse(myStorage.getItem("__log"));
+
+            if (temp.length > 0) {
+                logs.unshift(temp.shift());
+
+                setTimeout(function () {
+                    myStorage.setItem("__log", JSON.stringify(logs));
+                    resetCanvas();
+                    draw(logs[0]['png']);
+                }, 0);
+            }
+        }
+
+        function chgImg() {
+            var png = canvas.toDataURL();
+            Tesseract.recognize(png, { lang: "jpn" }).progress(function (p) {
+                const progress = document.getElementById("progress");
+                progress.innerHTML = (p.status);
+            }).then(function (r) {
+                var str = "いささかフキンシン（あ）だっただろう"
+                var theWord = str.substring((str.indexOf('（')) + 1, (str.indexOf('）')))
+                var result = document.getElementById("result");
+                var theValue = r.text.replace(/\s+/g, "");
+                console.log(theValue);
+                console.log(theWord);
+                if (theWord == theValue) {
+                    result.value = theValue;
+                }
+            })
+        }
+
+        function draw(src) {
+            var img = new Image();
+            img.src = src;
+
+            img.onload = function () {
+                ctx.drawImage(img, 0, 0);
+            }
+        }</script>
+</body>
+
+</html>
