@@ -207,7 +207,6 @@
                 const progress = document.getElementById("progress");
                 progress.innerHTML = (p.status);
             }).then(function (r) {
-                var theWord = str.substring((str.indexOf('（')) + 1, (str.indexOf('）')))
                 var result = document.getElementById("result");
                 var theValue = r.text.replace(/\s+/g, "");
                 result.value = theValue;
