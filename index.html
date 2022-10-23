@@ -5,26 +5,53 @@
     <meta charset="UTF-8">
     <script src="https://cdn.rawgit.com/naptha/tesseract.js/1.0.10/dist/tesseract.js"></script>
     <style type="text/css">
-        .title {
-            font-family: 'Marker Felt', sans-serif;
-            font-size: 10vw;
-            text-align: center;
-        }
-        .guidance {
-            font-family: 'Hannotate TC',sans-serif;
-            font-size: 3vw;
-            text-align: center;
+        .title-zone {
+            position: relative;
         }
 
-        .sorry {
-            background-color: seagreen;
-            border: 7px solid rgb(161, 117, 74);
-            font-size: 3vw;
-            font-family: 'HanziPen SC',sans-serif;
-            color: #eeeeee;
-            width: 80%;
-            margin: 0 auto;
-            text-align: center;
+        .title {
+            position: absolute;
+            top: 50%;
+            transform: translate(0, -50%);
+            height: 6vw;
+        }
+
+        .comment {
+            position: absolute;
+            bottom: 0%;
+            right: 0%;
+            height: 4vw;
+        }
+
+        .comment:hover ~ .comment-zone {
+            display: block;
+        }
+
+        .title-back {
+            width: 100%;
+            height: 8vw;
+        }
+
+        .comment-zone {
+            position: relative;
+            display: none;
+        }
+
+        .comment-zone:hover {
+            display: block;
+        }
+
+        .comment-value {
+            position: absolute;
+            top: 50%;
+            right: 0%;
+            height: 30vw;
+        }
+
+        .comment-back {
+            float: right;
+            width: 70vw;
+            height: 30vw;
         }
 
         canvas {
@@ -34,11 +61,14 @@
 </head>
 
 <body>
-    <div class="title">Tegaki de Anki</div>
-    <div class="guidance">Tegaki de Ankiはテストを作成し、手書きで回答する</div>
-    <div class="sorry">
-        －－　作成者からのお詫び　－－<br>はじめに作成者からお詫び申し上げます。こちらで使われる文字認識ですが、だいぶ精度が悪いです。明らかに読めるだろう！というものが読めないケースも多々あります。
-        作成者自身まだ学生ということもあり、有料のものを使用するのは困難で、精度に劣りますが完全無料のものを使わせていただきました。その点もご了承の上、どうか温かい目でお使いください。
+    <div class="title-zone">
+        <img class="title" src="タイトル.png">
+        <img class="comment" src="作成者からのコメント.png">
+        <img class="title-back" src="タイトル背景.jpg">
+        <div class="comment-zone">
+            <img class="comment-value" src="コメント.png">
+            <img class="comment-back" src="タイトル背景.jpg">
+        </div>
     </div>
     <canvas id="canvas" height="300"></canvas>
     <div style="padding:10px">
@@ -64,7 +94,7 @@
         canvas.width = document.documentElement.clientWidth - 20;
 
         //初期値（サイズ、色、アルファ値）の決定
-        var defSize = 6,
+        var defSize = 5,
             defColor = "#555";
 
         // キャンバスを白色に塗る
