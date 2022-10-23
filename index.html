@@ -77,7 +77,7 @@
         <button type="button" onclick="nextCanvas()">進む</button>
     </div>
     <div style="padding:10px">
-        <button type="button" onclick="chgImg()" value="1">画像変換</button>
+        <button type="button" onclick="chgImg()" value="1">文字変換</button>
     </div>
     <div id="progress" style="margin-bottom:1em; background:#eeeeee;"></div>
     <p>
@@ -203,19 +203,14 @@
 
         function chgImg() {
             var png = canvas.toDataURL();
-            Tesseract.recognize(png, { lang: "jpn" }).progress(function (p) {
+            Tesseract.recognize(png, { lang: "eng" }).progress(function (p) {
                 const progress = document.getElementById("progress");
                 progress.innerHTML = (p.status);
             }).then(function (r) {
-                var str = "いささかフキンシン（あ）だっただろう"
                 var theWord = str.substring((str.indexOf('（')) + 1, (str.indexOf('）')))
                 var result = document.getElementById("result");
                 var theValue = r.text.replace(/\s+/g, "");
-                console.log(theValue);
-                console.log(theWord);
-                if (theWord == theValue) {
-                    result.value = theValue;
-                }
+                result.value = theValue;
             })
         }
 
